@@ -1,0 +1,56 @@
+name: Build GDExtension (Windows)
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: template_debug
+            arch: x86_64
+          - target: template_release
+            arch: x86_64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Clone godot-cpp
+        run: |
+          git clone --depth 1 --branch 4.4 https://github.com/godotengine/godot-cpp.git godot-cpp
+
+      - name: Setup Python
+        uses: actions/setup-python@v6.2.0
+        with:
+          python-version: '3.11'
+
+      - name: Install SCons
+        run: |
+          pip install scons
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1.13.0
+        with:
+          arch: x64
+
+      - name: Build GDExtension
+        shell: pwsh
+        run: |
+          scons target=${{ matrix.target }} arch=${{ matrix.arch }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: godot-midi-windows-${{ matrix.target }}-${{ matrix.arch }}
+          path: project/addons/godot-midi/bin/windows/
+          if-no-files-found: error

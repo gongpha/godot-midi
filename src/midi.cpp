@@ -1,7 +1,11 @@
 #include "midi.h"
+
+#ifdef _GDEXTENSION
+#else
 #include "core/error/error_macros.h"
 #include "core/io/file_access.h"
 #include "core/object/class_db.h"
+#endif
 
 #include "tml_impl.h"
 
@@ -16,6 +20,21 @@ MIDI::~MIDI() {
 	}
 }
 
+#ifdef _GDEXTENSION
+void MIDI::_bind_methods() {
+	ClassDB::bind_static_method("MIDI", D_METHOD("load_from_buffer", "data"), &MIDI::load_from_buffer);
+}
+
+Ref<MIDI> MIDI::load_from_buffer(const PackedByteArray &p_stream_data) {
+	Ref<MIDI> m;
+	m.instantiate();
+	m->midi = tml_load_memory(p_stream_data.ptr(), p_stream_data.size());
+	if (!m->midi) {
+		ERR_FAIL_V_MSG(Ref<MIDI>(), "Failed to load MIDI from buffer.");
+	}
+	return m;
+}
+#else
 void MIDI::_bind_methods() {
 	ClassDB::bind_static_method("MIDI", D_METHOD("load_from_buffer", "data"), &MIDI::load_from_buffer);
 }
@@ -29,22 +48,17 @@ Ref<MIDI> MIDI::load_from_buffer(const Vector<uint8_t> &p_stream_data) {
 	}
 	return m;
 }
+#endif
 
 //
 
 void ResourceFormatLoaderMIDI::_bind_methods() {
-#ifdef _GDEXTENSION
-	ClassDB::bind_static_method("ResourceFormatLoaderMIDI", "load", &ResourceFormatLoaderMIDI::load);
-	ClassDB::bind_method(D_METHOD("get_recognized_extensions"), &ResourceFormatLoaderMIDI::get_recognized_extensions);
-	ClassDB::bind_method(D_METHOD("handles_type", "type"), &ResourceFormatLoaderMIDI::handles_type);
-	ClassDB::bind_method(D_METHOD("get_resource_type", "path"), &ResourceFormatLoaderMIDI::get_resource_type);
-#endif
 }
 
 #ifdef _GDEXTENSION
 
 Variant ResourceFormatLoaderMIDI::_load(const String &p_path, const String &p_original_path, bool p_use_sub_threads, int32_t p_cache_mode) const {
-	const Vector<uint8_t> stream_data = FileAccess::get_file_as_bytes(p_path);
+	const PackedByteArray stream_data = FileAccess::get_file_as_bytes(p_path);
 	ERR_FAIL_COND_V_MSG(stream_data.is_empty(), Ref<MIDI>(), vformat("Cannot open file '%s'.", p_path));
 	return MIDI::load_from_buffer(stream_data);
 }

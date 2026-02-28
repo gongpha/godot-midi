@@ -3,15 +3,18 @@
 #ifdef _GDEXTENSION
 #include <godot_cpp/classes/audio_server.hpp>
 #include <godot_cpp/classes/audio_stream.hpp>
+#include <godot_cpp/classes/audio_stream_playback.hpp>
+#include <godot_cpp/templates/local_vector.hpp>
+#include <godot_cpp/templates/safe_refcount.hpp>
+#include <godot_cpp/classes/mutex.hpp>
 using namespace godot;
 #else
 #include "servers/audio/audio_server.h"
 #include "servers/audio/audio_stream.h"
-#endif
-
 #include "core/os/mutex.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/safe_refcount.h"
+#endif
 
 #include "soundfont2.h"
 
@@ -25,7 +28,11 @@ class AudioStreamPlaybackSoundfont : public AudioStreamPlayback {
 private:
 	friend class AudioStreamSoundfontPlayer;
 
+#ifdef _GDEXTENSION
+	AudioStreamSoundfontPlayer *sf_stream = nullptr;
+#else
 	Ref<AudioStreamSoundfontPlayer> sf_stream;
+#endif
 
 	tsf *tsf_instance = nullptr;
 	uint32_t frames_mixed = 0;
@@ -49,7 +56,11 @@ private:
 		float fparam;
 	};
 
+#ifdef _GDEXTENSION
+	Ref<Mutex> pending_mutex;
+#else
 	BinaryMutex pending_mutex;
+#endif
 	LocalVector<PendingCommand> pending_commands;
 
 	void _flush_pending_commands();
@@ -58,6 +69,17 @@ protected:
 	static void _bind_methods();
 
 public:
+#ifdef _GDEXTENSION
+	virtual void _start(double p_from_pos = 0.0) override;
+	virtual void _stop() override;
+	virtual bool _is_playing() const override;
+
+	virtual int32_t _get_loop_count() const override;
+	virtual double _get_playback_position() const override;
+	virtual void _seek(double p_time) override;
+
+	virtual int32_t _mix(AudioFrame *p_buffer, float p_rate_scale, int32_t p_frames) override;
+#else
 	virtual void start(double p_from_pos = 0.0) override;
 	virtual void stop() override;
 	virtual bool is_playing() const override;
@@ -69,6 +91,7 @@ public:
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
 	virtual void tag_used_streams() override;
+#endif
 
 	void note_on(int p_key, float p_velocity = 1.0f, int p_channel = 0);
 	void note_off(int p_key, int p_channel = 0);
@@ -100,10 +123,17 @@ public:
 	void set_soundfont(const Ref<SoundFont2> &p_soundfont);
 	Ref<SoundFont2> get_soundfont() const;
 
+#ifdef _GDEXTENSION
+	virtual Ref<AudioStreamPlayback> _instantiate_playback() const override;
+	virtual String _get_stream_name() const override;
+	virtual double _get_length() const override;
+	virtual bool _is_monophonic() const override;
+#else
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
 	virtual double get_length() const override;
 	virtual bool is_monophonic() const override;
+#endif
 
 	AudioStreamSoundfontPlayer();
 	~AudioStreamSoundfontPlayer();

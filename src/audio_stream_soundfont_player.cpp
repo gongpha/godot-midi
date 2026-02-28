@@ -1,14 +1,26 @@
 #include "audio_stream_soundfont_player.h"
 
+#ifdef _GDEXTENSION
+using namespace godot;
+#else
 #include "core/error/error_macros.h"
+#endif
 
 #include "../thirdparty/tinysoundfont/tsf.h"
 
+#ifdef _GDEXTENSION
+#define PENDING_MUTEX_LOCK pending_mutex->lock();
+#define PENDING_MUTEX_UNLOCK pending_mutex->unlock();
+#else
+#define PENDING_MUTEX_LOCK pending_mutex.lock();
+#define PENDING_MUTEX_UNLOCK pending_mutex.unlock();
+#endif
+
 void AudioStreamPlaybackSoundfont::_flush_pending_commands() {
-	pending_mutex.lock();
+	PENDING_MUTEX_LOCK
 	LocalVector<PendingCommand> local_cmds(pending_commands);
 	pending_commands.clear();
-	pending_mutex.unlock();
+	PENDING_MUTEX_UNLOCK
 
 	if (!tsf_instance) {
 		return;
@@ -47,40 +59,69 @@ void AudioStreamPlaybackSoundfont::_flush_pending_commands() {
 	}
 }
 
+#ifdef _GDEXTENSION
+void AudioStreamPlaybackSoundfont::_start(double p_from_pos) {
+#else
 void AudioStreamPlaybackSoundfont::start(double p_from_pos) {
+#endif
 	active = true;
 	frames_mixed = 0;
 }
 
+#ifdef _GDEXTENSION
+void AudioStreamPlaybackSoundfont::_stop() {
+#else
 void AudioStreamPlaybackSoundfont::stop() {
+#endif
 	active = false;
 	if (tsf_instance) {
 		tsf_note_off_all(tsf_instance);
 	}
 }
 
+#ifdef _GDEXTENSION
+bool AudioStreamPlaybackSoundfont::_is_playing() const {
+#else
 bool AudioStreamPlaybackSoundfont::is_playing() const {
+#endif
 	return active;
 }
 
+#ifdef _GDEXTENSION
+int32_t AudioStreamPlaybackSoundfont::_get_loop_count() const {
+#else
 int AudioStreamPlaybackSoundfont::get_loop_count() const {
+#endif
 	return 0;
 }
 
+#ifdef _GDEXTENSION
+double AudioStreamPlaybackSoundfont::_get_playback_position() const {
+#else
 double AudioStreamPlaybackSoundfont::get_playback_position() const {
+#endif
 	float sample_rate = AudioServer::get_singleton()->get_mix_rate();
 	return (double)frames_mixed / (double)sample_rate;
 }
 
+#ifdef _GDEXTENSION
+void AudioStreamPlaybackSoundfont::_seek(double p_time) {
+#else
 void AudioStreamPlaybackSoundfont::seek(double p_time) {
+#endif
 	float sample_rate = AudioServer::get_singleton()->get_mix_rate();
 	frames_mixed = (uint32_t)(sample_rate * p_time);
 }
 
+#ifdef _GDEXTENSION
+int32_t AudioStreamPlaybackSoundfont::_mix(AudioFrame *p_buffer, float p_rate_scale, int32_t p_frames) {
+#else
 int AudioStreamPlaybackSoundfont::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+#endif
 	if (!active || !tsf_instance) {
 		for (int i = 0; i < p_frames; i++) {
-			p_buffer[i] = AudioFrame(0, 0);
+			p_buffer[i].left = 0.0f;
+			p_buffer[i].right = 0.0f;
 		}
 		return p_frames;
 	}
@@ -93,55 +134,61 @@ int AudioStreamPlaybackSoundfont::mix(AudioFrame *p_buffer, float p_rate_scale, 
 	return p_frames;
 }
 
+#ifdef _GDEXTENSION
+#else
 void AudioStreamPlaybackSoundfont::tag_used_streams() {
 	sf_stream->tag_used(get_playback_position());
 }
+#endif
 
 void AudioStreamPlaybackSoundfont::note_on(int p_key, float p_velocity, int p_channel) {
 	ERR_FAIL_COND(p_key < 0 || p_key > 127);
-	pending_mutex.lock();
+	PENDING_MUTEX_LOCK
 	pending_commands.push_back({ CMD_NOTE_ON, p_channel, p_key, 0, p_velocity });
-	pending_mutex.unlock();
+	PENDING_MUTEX_UNLOCK
 }
 
 void AudioStreamPlaybackSoundfont::note_off(int p_key, int p_channel) {
 	ERR_FAIL_COND(p_key < 0 || p_key > 127);
-	pending_mutex.lock();
+	PENDING_MUTEX_LOCK
 	pending_commands.push_back({ CMD_NOTE_OFF, p_channel, p_key, 0, 0.0f });
-	pending_mutex.unlock();
+	PENDING_MUTEX_UNLOCK
 }
 
 void AudioStreamPlaybackSoundfont::note_off_all() {
-	pending_mutex.lock();
+	PENDING_MUTEX_LOCK
 	pending_commands.push_back({ CMD_NOTE_OFF_ALL, 0, 0, 0, 0.0f });
-	pending_mutex.unlock();
+	PENDING_MUTEX_UNLOCK
 }
 
 void AudioStreamPlaybackSoundfont::set_preset(int p_channel, int p_preset_number, bool p_drums) {
-	pending_mutex.lock();
+	PENDING_MUTEX_LOCK
 	pending_commands.push_back({ CMD_SET_PRESET, p_channel, p_preset_number, p_drums ? 1 : 0, 0.0f });
-	pending_mutex.unlock();
+	PENDING_MUTEX_UNLOCK
 }
 
 void AudioStreamPlaybackSoundfont::control_change(int p_channel, int p_controller, int p_value) {
-	pending_mutex.lock();
+	PENDING_MUTEX_LOCK
 	pending_commands.push_back({ CMD_CONTROL_CHANGE, p_channel, p_controller, p_value, 0.0f });
-	pending_mutex.unlock();
+	PENDING_MUTEX_UNLOCK
 }
 
 void AudioStreamPlaybackSoundfont::pitch_bend(int p_channel, int p_pitch_wheel) {
-	pending_mutex.lock();
+	PENDING_MUTEX_LOCK
 	pending_commands.push_back({ CMD_PITCH_BEND, p_channel, p_pitch_wheel, 0, 0.0f });
-	pending_mutex.unlock();
+	PENDING_MUTEX_UNLOCK
 }
 
 void AudioStreamPlaybackSoundfont::channel_pressure(int p_channel, int p_pressure) {
-	pending_mutex.lock();
+	PENDING_MUTEX_LOCK
 	pending_commands.push_back({ CMD_CHANNEL_PRESSURE, p_channel, p_pressure, 0, 0.0f });
-	pending_mutex.unlock();
+	PENDING_MUTEX_UNLOCK
 }
 
 AudioStreamPlaybackSoundfont::AudioStreamPlaybackSoundfont() {
+#ifdef _GDEXTENSION
+	pending_mutex.instantiate();
+#endif
 }
 
 AudioStreamPlaybackSoundfont::~AudioStreamPlaybackSoundfont() {
@@ -176,6 +223,25 @@ Ref<SoundFont2> AudioStreamSoundfontPlayer::get_soundfont() const {
 	return soundfont;
 }
 
+#ifdef _GDEXTENSION
+Ref<AudioStreamPlayback> AudioStreamSoundfontPlayer::_instantiate_playback() const {
+	ERR_FAIL_COND_V_MSG(soundfont.is_null(), nullptr, "AudioStreamSoundfontPlayer : No SoundFont2 assigned.");
+	ERR_FAIL_COND_V_MSG(!soundfont->get_soundfont(), nullptr, "AudioStreamSoundfontPlayer : SoundFont2 has no loaded data.");
+
+	Ref<AudioStreamPlaybackSoundfont> playback;
+	playback.instantiate();
+	playback->sf_stream = const_cast<AudioStreamSoundfontPlayer *>(this);
+
+	playback->tsf_instance = tsf_copy(soundfont->get_soundfont());
+	ERR_FAIL_COND_V_MSG(!playback->tsf_instance, nullptr, "AudioStreamSoundfontPlayer : Failed to copy SoundFont instance.");
+
+	float sample_rate = AudioServer::get_singleton()->get_mix_rate();
+	tsf_set_output(playback->tsf_instance, TSF_STEREO_INTERLEAVED, (int)sample_rate, 0.0f);
+	tsf_set_max_voices(playback->tsf_instance, 256);
+
+	return playback;
+}
+#else
 Ref<AudioStreamPlayback> AudioStreamSoundfontPlayer::instantiate_playback() {
 	ERR_FAIL_COND_V_MSG(soundfont.is_null(), nullptr, "AudioStreamSoundfontPlayer : No SoundFont2 assigned.");
 	ERR_FAIL_COND_V_MSG(!soundfont->get_soundfont(), nullptr, "AudioStreamSoundfontPlayer : SoundFont2 has no loaded data.");
@@ -193,16 +259,29 @@ Ref<AudioStreamPlayback> AudioStreamSoundfontPlayer::instantiate_playback() {
 
 	return playback;
 }
+#endif
 
+#ifdef _GDEXTENSION
+String AudioStreamSoundfontPlayer::_get_stream_name() const {
+#else
 String AudioStreamSoundfontPlayer::get_stream_name() const {
+#endif
 	return "";
 }
 
+#ifdef _GDEXTENSION
+double AudioStreamSoundfontPlayer::_get_length() const {
+#else
 double AudioStreamSoundfontPlayer::get_length() const {
+#endif
 	return 0.0;
 }
 
+#ifdef _GDEXTENSION
+bool AudioStreamSoundfontPlayer::_is_monophonic() const {
+#else
 bool AudioStreamSoundfontPlayer::is_monophonic() const {
+#endif
 	return false;
 }
 

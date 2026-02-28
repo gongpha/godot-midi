@@ -46,7 +46,7 @@ Run the following command to download godot-cpp:
 env = SConscript("godot-cpp/SConstruct", {"env": env, "customs": customs})
 
 env.Append(CPPPATH=["src/"])
-sources = Glob("src/*.cpp")
+sources = Glob("src/*.cpp") + Glob("src/ui/*.cpp")
 
 sources.extend([
     "register_types.cpp",
@@ -54,8 +54,7 @@ sources.extend([
 
 ###
 env.Append(CPPDEFINES=[
-    "_GDEXTENSION",
-    ('_GDXMOD_LIB_NAME', libname)
+    "_GDEXTENSION"
 ])
 
 env.__class__._process_env = build._process_env

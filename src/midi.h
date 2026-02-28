@@ -3,6 +3,7 @@
 #ifdef _GDEXTENSION
 #include <godot_cpp/classes/resource.hpp>
 #include <godot_cpp/classes/resource_format_loader.hpp>
+#include <godot_cpp/classes/file_access.hpp>
 using namespace godot;
 #else
 #include "core/io/resource.h"
@@ -25,7 +26,11 @@ protected:
 
 public:
 
+#ifdef _GDEXTENSION
+	static Ref<MIDI> load_from_buffer(const PackedByteArray &p_stream_data);
+#else
 	static Ref<MIDI> load_from_buffer(const Vector<uint8_t> &p_stream_data);
+#endif
 
 	tml_message* get_midi() const {
 		return midi;
@@ -43,7 +48,7 @@ protected:
 
 public:
 #ifdef _GDEXTENSION
-	virtual Variant _load(const String &p_path, const String &p_original_path, bool p_use_sub_threads, int32_t p_cache_mode) const;
+	virtual Variant _load(const String &p_path, const String &p_original_path, bool p_use_sub_threads, int32_t p_cache_mode) const override;
 	virtual PackedStringArray _get_recognized_extensions() const override;
 	virtual bool _handles_type(const StringName &type) const override;
 	virtual String _get_resource_type(const String &p_path) const override;

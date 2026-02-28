@@ -17,7 +17,7 @@ module_env.Append(CPPDEFINES=[
 ])
 
 module_env.__class__._process_env = build._process_env
-module_env._process_env(module_env, sources, True)
+module_env._process_env(module_env, sources, False)
 ###
 
 module_env.add_source_files(env.modules_sources, sources)

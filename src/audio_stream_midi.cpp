@@ -1,9 +1,22 @@
 #include "audio_stream_midi.h"
 
+#ifdef _GDEXTENSION
+using namespace godot;
+#else
 #include "core/error/error_macros.h"
+#endif
 
 #include "../thirdparty/tinysoundfont/tsf.h"
 #include "../thirdparty/tinysoundfont/tml.h"
+
+#ifdef _GDEXTENSION
+#define PENDING_MUTEX_LOCK pending_mutex->lock();
+#define PENDING_MUTEX_UNLOCK pending_mutex->unlock();
+#define SNAME(x) x
+#else
+#define PENDING_MUTEX_LOCK pending_mutex.lock();
+#define PENDING_MUTEX_UNLOCK pending_mutex.unlock();
+#endif
 
 bool AudioStreamPlaybackMIDISF2::_has_any_solo() const {
 	for (int i = 0; i < MIDI_CHANNEL_COUNT; i++) {
@@ -111,32 +124,60 @@ void AudioStreamPlaybackMIDISF2::_process_midi_events(double p_up_to_msec) {
 	}
 }
 
+#ifdef _GDEXTENSION
+void AudioStreamPlaybackMIDISF2::_start(double p_from_pos) {
+	active = true;
+	loops = 0;
+	_seek(p_from_pos);
+}
+#else
 void AudioStreamPlaybackMIDISF2::start(double p_from_pos) {
 	active = true;
 	loops = 0;
 	seek(p_from_pos);
 }
+#endif
 
+#ifdef _GDEXTENSION
+void AudioStreamPlaybackMIDISF2::_stop() {
+#else
 void AudioStreamPlaybackMIDISF2::stop() {
+#endif
 	active = false;
 	if (tsf_instance) {
 		tsf_note_off_all(tsf_instance);
 	}
 }
 
+#ifdef _GDEXTENSION
+bool AudioStreamPlaybackMIDISF2::_is_playing() const {
+#else
 bool AudioStreamPlaybackMIDISF2::is_playing() const {
+#endif
 	return active;
 }
 
+#ifdef _GDEXTENSION
+int32_t AudioStreamPlaybackMIDISF2::_get_loop_count() const {
+#else
 int AudioStreamPlaybackMIDISF2::get_loop_count() const {
+#endif
 	return loops;
 }
 
+#ifdef _GDEXTENSION
+double AudioStreamPlaybackMIDISF2::_get_playback_position() const {
+#else
 double AudioStreamPlaybackMIDISF2::get_playback_position() const {
+#endif
 	return playback_msec / 1000.0;
 }
 
+#ifdef _GDEXTENSION
+void AudioStreamPlaybackMIDISF2::_seek(double p_time) {
+#else
 void AudioStreamPlaybackMIDISF2::seek(double p_time) {
+#endif
 	if (!tsf_instance || !first_msg) {
 		return;
 	}
@@ -171,10 +212,15 @@ void AudioStreamPlaybackMIDISF2::seek(double p_time) {
 	frames_mixed = (uint32_t)(sample_rate * p_time);
 }
 
+#ifdef _GDEXTENSION
+int32_t AudioStreamPlaybackMIDISF2::_mix(AudioFrame *p_buffer, float p_rate_scale, int32_t p_frames) {
+#else
 int AudioStreamPlaybackMIDISF2::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+#endif
 	if (!active || !tsf_instance) {
 		for (int i = 0; i < p_frames; i++) {
-			p_buffer[i] = AudioFrame(0, 0);
+			p_buffer[i].left = 0.0f;
+			p_buffer[i].right = 0.0f;
 		}
 		return p_frames;
 	}
@@ -208,10 +254,15 @@ int AudioStreamPlaybackMIDISF2::mix(AudioFrame *p_buffer, float p_rate_scale, in
 		if (!current_msg && tsf_active_voice_count(tsf_instance) == 0) {
 			if (use_loop) {
 				loops++;
+#ifdef _GDEXTENSION
+				_seek(midi_stream->loop_offset);
+#else
 				seek(midi_stream->loop_offset);
+#endif
 			} else {
 				for (int i = offset; i < p_frames; i++) {
-					p_buffer[i] = AudioFrame(0, 0);
+					p_buffer[i].left = 0.0f;
+					p_buffer[i].right = 0.0f;
 				}
 				active = false;
 				break;
@@ -222,9 +273,12 @@ int AudioStreamPlaybackMIDISF2::mix(AudioFrame *p_buffer, float p_rate_scale, in
 	return p_frames;
 }
 
+#ifdef _GDEXTENSION
+#else
 void AudioStreamPlaybackMIDISF2::tag_used_streams() {
 	midi_stream->tag_used(get_playback_position());
 }
+#endif
 
 AudioStreamPlaybackMIDISF2::~AudioStreamPlaybackMIDISF2() {
 	if (tsf_instance) {
@@ -234,9 +288,9 @@ AudioStreamPlaybackMIDISF2::~AudioStreamPlaybackMIDISF2() {
 }
 
 void AudioStreamPlaybackMIDISF2::push_midi_message(MIDIMessageType p_type, int p_channel, int p_param1, int p_param2) {
-	pending_mutex.lock();
+	PENDING_MUTEX_LOCK
 	pending_messages.push_back({ p_type, p_channel, p_param1, p_param2 });
-	pending_mutex.unlock();
+	PENDING_MUTEX_UNLOCK
 }
 
 void AudioStreamPlaybackMIDISF2::set_channel_muted(int p_channel, bool p_muted) {
@@ -385,6 +439,9 @@ TypedArray<Dictionary> AudioStreamPlaybackMIDISF2::get_midi_channel_list() const
 }
 
 AudioStreamPlaybackMIDISF2::AudioStreamPlaybackMIDISF2() {
+#ifdef _GDEXTENSION
+	pending_mutex.instantiate();
+#endif
 	for (int i = 0; i < MIDI_CHANNEL_COUNT; i++) {
 		channel_states[i].volume.set(1.0f);
 		channel_states[i].program_override.set(-1);
@@ -435,10 +492,10 @@ void AudioStreamPlaybackMIDISF2::_apply_pending_message(const PendingMIDIMessage
 }
 
 void AudioStreamPlaybackMIDISF2::_flush_pending_messages() {
-	pending_mutex.lock();
+	PENDING_MUTEX_LOCK
 	LocalVector<PendingMIDIMessage> local_msgs(pending_messages);
 	pending_messages.clear();
-	pending_mutex.unlock();
+	PENDING_MUTEX_UNLOCK
 
 	for (const PendingMIDIMessage &msg : local_msgs) {
 		_apply_pending_message(msg);
@@ -603,7 +660,11 @@ void AudioStreamMIDI::set_loop(bool p_enable) {
 	loop = p_enable;
 }
 
+#ifdef _GDEXTENSION
+bool AudioStreamMIDI::_has_loop() const {
+#else
 bool AudioStreamMIDI::has_loop() const {
+#endif
 	return loop;
 }
 
@@ -615,18 +676,19 @@ double AudioStreamMIDI::get_loop_offset() const {
 	return loop_offset;
 }
 
-Ref<AudioStreamPlayback> AudioStreamMIDI::instantiate_playback() {
-	ERR_FAIL_COND_V_MSG(soundfont.is_null(), nullptr, "AudioStreamMIDI : No SoundFont2 assigned.");
-	ERR_FAIL_COND_V_MSG(midi.is_null(), nullptr, "AudioStreamMIDI : No MIDI assigned.");
-	ERR_FAIL_COND_V_MSG(!soundfont->get_soundfont(), nullptr, "AudioStreamMIDI : SoundFont2 has no loaded data.");
-	ERR_FAIL_COND_V_MSG(!midi->get_midi(), nullptr, "AudioStreamMIDI : MIDI has no loaded data.");
+#ifdef _GDEXTENSION
+Ref<AudioStreamPlayback> AudioStreamMIDI::_instantiate_playback() const {
+	ERR_FAIL_COND_V_MSG(soundfont.is_null(), nullptr, "No SoundFont2 assigned.");
+	ERR_FAIL_COND_V_MSG(midi.is_null(), nullptr, "No MIDI assigned.");
+	ERR_FAIL_COND_V_MSG(!soundfont->get_soundfont(), nullptr, "SoundFont2 has no loaded data.");
+	ERR_FAIL_COND_V_MSG(!midi->get_midi(), nullptr, "MIDI has no loaded data.");
 
 	Ref<AudioStreamPlaybackMIDISF2> playback;
 	playback.instantiate();
-	playback->midi_stream = Ref<AudioStreamMIDI>(this);
+	playback->midi_stream = Ref<AudioStreamMIDI>(const_cast<AudioStreamMIDI *>(this));
 
 	playback->tsf_instance = tsf_copy(soundfont->get_soundfont());
-	ERR_FAIL_COND_V_MSG(!playback->tsf_instance, nullptr, "AudioStreamMIDI : Failed to copy SoundFont instance.");
+	ERR_FAIL_COND_V_MSG(!playback->tsf_instance, nullptr, "Failed to copy SoundFont instance.");
 
 	float sample_rate = AudioServer::get_singleton()->get_mix_rate();
 
@@ -642,12 +704,49 @@ Ref<AudioStreamPlayback> AudioStreamMIDI::instantiate_playback() {
 
 	return playback;
 }
+#else
+Ref<AudioStreamPlayback> AudioStreamMIDI::instantiate_playback() {
+	ERR_FAIL_COND_V_MSG(soundfont.is_null(), nullptr, "No SoundFont2 assigned.");
+	ERR_FAIL_COND_V_MSG(midi.is_null(), nullptr, "No MIDI assigned.");
+	ERR_FAIL_COND_V_MSG(!soundfont->get_soundfont(), nullptr, "SoundFont2 has no loaded data.");
+	ERR_FAIL_COND_V_MSG(!midi->get_midi(), nullptr, "MIDI has no loaded data.");
 
+	Ref<AudioStreamPlaybackMIDISF2> playback;
+	playback.instantiate();
+	playback->midi_stream = Ref<AudioStreamMIDI>(this);
+
+	playback->tsf_instance = tsf_copy(soundfont->get_soundfont());
+	ERR_FAIL_COND_V_MSG(!playback->tsf_instance, nullptr, "Failed to copy SoundFont instance.");
+
+	float sample_rate = AudioServer::get_singleton()->get_mix_rate();
+
+	tsf_set_output(playback->tsf_instance, TSF_STEREO_INTERLEAVED, (int)sample_rate, 0.0f);
+	tsf_set_max_voices(playback->tsf_instance, 256);
+
+	playback->first_msg = midi->get_midi();
+	playback->current_msg = midi->get_midi();
+	playback->playback_msec = 0.0;
+	playback->frames_mixed = 0;
+	playback->active = false;
+	playback->loops = 0;
+
+	return playback;
+}
+#endif
+
+#ifdef _GDEXTENSION
+String AudioStreamMIDI::_get_stream_name() const {
+#else
 String AudioStreamMIDI::get_stream_name() const {
+#endif
 	return "";
 }
 
+#ifdef _GDEXTENSION
+double AudioStreamMIDI::_get_length() const {
+#else
 double AudioStreamMIDI::get_length() const {
+#endif
 	if (midi.is_null() || !midi->get_midi()) {
 		return 0.0;
 	}
@@ -656,7 +755,11 @@ double AudioStreamMIDI::get_length() const {
 	return (double)time_length / 1000.0;
 }
 
+#ifdef _GDEXTENSION
+bool AudioStreamMIDI::_is_monophonic() const {
+#else
 bool AudioStreamMIDI::is_monophonic() const {
+#endif
 	return false;
 }
 
@@ -674,7 +777,11 @@ void AudioStreamMIDI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_transpose"), &AudioStreamMIDI::get_transpose);
 
 	ClassDB::bind_method(D_METHOD("set_loop", "enable"), &AudioStreamMIDI::set_loop);
+#ifdef _GDEXTENSION
+	ClassDB::bind_method(D_METHOD("has_loop"), &AudioStreamMIDI::_has_loop);
+#else
 	ClassDB::bind_method(D_METHOD("has_loop"), &AudioStreamMIDI::has_loop);
+#endif
 
 	ClassDB::bind_method(D_METHOD("set_loop_offset", "seconds"), &AudioStreamMIDI::set_loop_offset);
 	ClassDB::bind_method(D_METHOD("get_loop_offset"), &AudioStreamMIDI::get_loop_offset);

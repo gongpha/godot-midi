@@ -1,3 +1,11 @@
 __pycache__/
-
 .vscode/
+
+gen/
+
+.sconsign.dblite
+
+godot-cpp
+godot-cpp/
+
+*.os

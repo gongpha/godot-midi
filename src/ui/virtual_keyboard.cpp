@@ -1,6 +1,12 @@
 #include "virtual_keyboard.h"
 
+#ifdef _GDEXTENSION
+#include <godot_cpp/classes/input_event_mouse_button.hpp>
+#include <godot_cpp/classes/input_event_mouse_motion.hpp>
+#define SNAME(x) x
+#else
 #include "scene/theme/theme_db.h"
+#endif
 
 /*
 	piano key layout within one octave (C=0 through B=11):
@@ -133,7 +139,11 @@ void VirtualKeyboard::_release_note() {
 	}
 }
 
+#ifdef _GDEXTENSION
+void VirtualKeyboard::_gui_input(const Ref<InputEvent> &p_event) {
+#else
 void VirtualKeyboard::gui_input(const Ref<InputEvent> &p_event) {
+#endif
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (disable_input) {
@@ -141,7 +151,11 @@ void VirtualKeyboard::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
+#ifdef _GDEXTENSION
+	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+#else
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
+#endif
 		if (mb->is_pressed()) {
 			int note = _note_at_position(mb->get_position());
 			_press_note(note);
@@ -249,6 +263,7 @@ void VirtualKeyboard::_notification(int p_what) {
 	}
 }
 
+#ifndef _GDEXTENSION
 void VirtualKeyboard::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
@@ -286,10 +301,17 @@ void VirtualKeyboard::_update_theme_item_cache() {
 		theme_cache.separator_width = 1;
 	}
 }
+#endif
 
+#ifdef _GDEXTENSION
+Vector2 VirtualKeyboard::_get_minimum_size() const {
+	return Vector2(_get_white_key_count() * (float)theme_cache.white_key_width, 0.0);
+}
+#else
 Size2 VirtualKeyboard::get_minimum_size() const {
 	return Size2(_get_white_key_count() * (float)theme_cache.white_key_width, 0.0);
 }
+#endif
 
 void VirtualKeyboard::set_octave_start(int p_octave) {
 	p_octave = CLAMP(p_octave, 0, 9);
@@ -403,6 +425,7 @@ void VirtualKeyboard::_bind_methods() {
 	BIND_ENUM_CONSTANT(KEY_STATE_PRESSED);
 	BIND_ENUM_CONSTANT(KEY_STATE_HOVER);
 
+#ifndef _GDEXTENSION
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, VirtualKeyboard, white_key_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, VirtualKeyboard, white_key_pressed_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, VirtualKeyboard, white_key_hover_color);
@@ -414,6 +437,7 @@ void VirtualKeyboard::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, VirtualKeyboard, black_key_width_ratio);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, VirtualKeyboard, black_key_height_ratio);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, VirtualKeyboard, separator_width);
+#endif
 }
 
 VirtualKeyboard::VirtualKeyboard() {

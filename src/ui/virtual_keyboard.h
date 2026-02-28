@@ -2,12 +2,14 @@
 
 #ifdef _GDEXTENSION
 #include <godot_cpp/classes/control.hpp>
+#include <godot_cpp/classes/input_event.hpp>
+#include <godot_cpp/templates/hash_map.hpp>
 using namespace godot;
 #else
 #include "scene/gui/control.h"
+#include "core/templates/hash_map.h"
 #endif
 
-#include "core/templates/hash_map.h"
 
 class VirtualKeyboard : public Control {
 	GDCLASS(VirtualKeyboard, Control);
@@ -31,13 +33,13 @@ private:
 	HashMap<int, Color> key_color_overrides;
 
 	struct ThemeCache {
-		Color white_key_color;
-		Color white_key_pressed_color;
-		Color white_key_hover_color;
-		Color black_key_color;
-		Color black_key_pressed_color;
-		Color black_key_hover_color;
-		Color separator_color;
+		Color white_key_color = Color(0.95, 0.95, 0.95);
+		Color white_key_pressed_color = Color(0.75, 0.82, 0.92);
+		Color white_key_hover_color = Color(0.88, 0.88, 0.92);
+		Color black_key_color = Color(0.15, 0.15, 0.15);
+		Color black_key_pressed_color = Color(0.35, 0.42, 0.55);
+		Color black_key_hover_color = Color(0.25, 0.25, 0.3);
+		Color separator_color = Color(0.6, 0.6, 0.6);
 		int white_key_width = 24;
 		int black_key_width_ratio = 60; // percentage of white key width
 		int black_key_height_ratio = 60; // percentage of total height
@@ -56,11 +58,16 @@ private:
 
 protected:
 	void _notification(int p_what);
+#ifndef _GDEXTENSION
 	virtual void _update_theme_item_cache() override;
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+#endif
 	static void _bind_methods();
 
 public:
+#ifdef _GDEXTENSION
+	virtual void _gui_input(const Ref<InputEvent> &p_event) override;
+#endif
 	void set_octave_start(int p_octave);
 	int get_octave_start() const;
 
@@ -78,7 +85,11 @@ public:
 	bool has_key_color_override(int p_note) const;
 	Color get_key_color_override(int p_note) const;
 
+#ifdef _GDEXTENSION
+	virtual Vector2 _get_minimum_size() const override;
+#else
 	virtual Size2 get_minimum_size() const override;
+#endif
 
 	VirtualKeyboard();
 	~VirtualKeyboard();
