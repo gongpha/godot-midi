@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamSoundfontPlayer" inherits="AudioStream" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An audio stream that synthesizes sound from a SoundFont2, driven by direct note commands.
+	</brief_description>
+	<description>
+		[AudioStreamSoundfontPlayer] is an [AudioStream] that acts as a live SoundFont2 instrument. Unlike [AudioStreamMIDI], it does not require a MIDI file - instead, notes are triggered programmatically through the [AudioStreamPlaybackSoundfont] playback instance.
+		Assign a [member soundfont] resource, play via an [AudioStreamPlayer], then obtain the playback with [method AudioStreamPlayer.get_stream_playback] and call [method AudioStreamPlaybackSoundfont.note_on] / [method AudioStreamPlaybackSoundfont.note_off] to produce sound. This is ideal for virtual keyboards and interactive music applications.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="soundfont" type="SoundFont2" setter="set_soundfont" getter="get_soundfont">
+			The [SoundFont2] resource used to synthesize sound. Must be assigned before playback.
+		</member>
+	</members>
+</class>

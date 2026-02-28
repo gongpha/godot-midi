@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamPlaybackMIDISF2" inherits="AudioStreamPlayback" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Playback instance for [AudioStreamMIDI] with per-channel MIDI controls.
+	</brief_description>
+	<description>
+		[AudioStreamPlaybackMIDISF2] is the playback class instantiated by [AudioStreamMIDI]. It renders MIDI events through a TinySoundFont synthesizer and provides per-channel controls suitable for karaoke-style applications: mute, solo, transpose, volume, and program (instrument) override.
+		MIDI messages can also be sent manually via [method push_midi_message], which is thread-safe and processed on the audio thread.
+		The [signal applied_midi_message] signal is emitted (on the main thread) whenever a MIDI event from the loaded MIDI file is processed during playback. Manually pushed messages do [b]not[/b] trigger this signal.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_channel_preset_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="channel" type="int" />
+			<description>
+				Returns the internal SoundFont preset index currently assigned to the given MIDI channel, or [code]-1[/code] if unavailable.
+			</description>
+		</method>
+		<method name="get_channel_preset_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="channel" type="int" />
+			<description>
+				Returns the name of the SoundFont preset currently assigned to the given MIDI channel. Returns an empty string if unavailable.
+			</description>
+		</method>
+		<method name="get_channel_preset_number" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="channel" type="int" />
+			<description>
+				Returns the preset (program) number currently assigned to the given MIDI channel, or [code]-1[/code] if unavailable.
+			</description>
+		</method>
+		<method name="get_channel_program_override" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="channel" type="int" />
+			<description>
+				Returns the program override for the given MIDI channel, or [code]-1[/code] if no override is set.
+			</description>
+		</method>
+		<method name="get_channel_transpose" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="channel" type="int" />
+			<description>
+				Returns the per-channel transpose in semitones for the given MIDI channel.
+			</description>
+		</method>
+		<method name="get_channel_volume" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="channel" type="int" />
+			<description>
+				Returns the volume multiplier for the given MIDI channel.
+			</description>
+		</method>
+		<method name="get_midi_channel_list" qualifiers="const">
+			<return type="Dictionary[]" />
+			<description>
+				Returns an array of dictionaries describing every MIDI channel used in the loaded MIDI file. Each dictionary contains:
+				- [code]channel[/code] ([int]): The channel number (0–15).
+				- [code]program[/code] ([int]): The last program change value for this channel.
+				- [code]note_count[/code] ([int]): Total number of note-on events on this channel.
+				- [code]is_drum[/code] ([bool]): [code]true[/code] if this is channel 9 (General MIDI drum channel).
+				- [code]preset_name[/code] ([String]): The SoundFont preset name, if a SoundFont is loaded.
+			</description>
+		</method>
+		<method name="is_channel_muted" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="channel" type="int" />
+			<description>
+				Returns [code]true[/code] if the given MIDI channel is muted.
+			</description>
+		</method>
+		<method name="is_channel_solo" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="channel" type="int" />
+			<description>
+				Returns [code]true[/code] if the given MIDI channel is soloed.
+			</description>
+		</method>
+		<method name="push_midi_message">
+			<return type="void" />
+			<param index="0" name="type" type="int" enum="AudioStreamPlaybackMIDISF2.MIDIMessageType" />
+			<param index="1" name="channel" type="int" />
+			<param index="2" name="param1" type="int" />
+			<param index="3" name="param2" type="int" default="0" />
+			<description>
+				Enqueues a MIDI message to be processed on the audio thread. This is thread-safe and can be called from any thread.
+				[param type] is the MIDI message type (e.g. [constant MESSAGE_NOTE_ON]).
+				[param channel] is the MIDI channel (0–15).
+				[param param1] and [param param2] depend on the message type:
+				- [constant MESSAGE_NOTE_ON] / [constant MESSAGE_NOTE_OFF]: [param param1] = key (0–127), [param param2] = velocity (0–127).
+				- [constant MESSAGE_CONTROL_CHANGE]: [param param1] = controller number (see [enum MIDIController]), [param param2] = value (0–127).
+				- [constant MESSAGE_PROGRAM_CHANGE]: [param param1] = program number (0–127).
+				- [constant MESSAGE_PITCH_BEND]: [param param1] = pitch bend value (0–16383, center = 8192).
+				[b]Note:[/b] [constant MESSAGE_SET_TEMPO] cannot be sent via this method.
+			</description>
+		</method>
+		<method name="set_channel_muted">
+			<return type="void" />
+			<param index="0" name="channel" type="int" />
+			<param index="1" name="muted" type="bool" />
+			<description>
+				Sets whether the given MIDI channel (0–15) is muted. Muted channels will not produce any new note-on events.
+			</description>
+		</method>
+		<method name="set_channel_program_override">
+			<return type="void" />
+			<param index="0" name="channel" type="int" />
+			<param index="1" name="program" type="int" />
+			<description>
+				Overrides the instrument program for the given MIDI channel. Set to [code]-1[/code] to disable the override and use the program from the MIDI file. Valid program numbers are 0–127.
+			</description>
+		</method>
+		<method name="set_channel_solo">
+			<return type="void" />
+			<param index="0" name="channel" type="int" />
+			<param index="1" name="solo" type="bool" />
+			<description>
+				Sets whether the given MIDI channel (0–15) is soloed. When any channel is soloed, only soloed channels produce sound. Non-soloed, non-muted channels are effectively silenced.
+			</description>
+		</method>
+		<method name="set_channel_transpose">
+			<return type="void" />
+			<param index="0" name="channel" type="int" />
+			<param index="1" name="semitones" type="int" />
+			<description>
+				Sets the per-channel transpose in semitones. This is added on top of the global [member AudioStreamMIDI.transpose] (which is in octaves).
+			</description>
+		</method>
+		<method name="set_channel_volume">
+			<return type="void" />
+			<param index="0" name="channel" type="int" />
+			<param index="1" name="volume" type="float" />
+			<description>
+				Sets the volume multiplier for the given MIDI channel (0–15). The value is clamped to the range [code]0.0[/code] to [code]1.0[/code] and applied as a velocity multiplier on note-on events. Default is [code]1.0[/code].
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="applied_midi_message">
+			<param index="0" name="type" type="int" />
+			<param index="1" name="channel" type="int" />
+			<param index="2" name="param1" type="int" />
+			<param index="3" name="param2" type="int" />
+			<description>
+				Emitted on the main thread when a MIDI message from the loaded MIDI file is processed during playback. This signal is [b]not[/b] emitted for messages sent via [method push_midi_message].
+				[param type] corresponds to [enum MIDIMessageType]. The meaning of [param param1] and [param param2] depends on the message type (see [method push_midi_message] for details).
+				Additional types emitted only by this signal (not sendable via [method push_midi_message]):
+				- [constant MESSAGE_SET_TEMPO]: [param param1] = tempo in beats per minute (BPM). [param channel], [param param2] are unused.
+				[b]Note:[/b] For [constant MESSAGE_NOTE_ON] and [constant MESSAGE_NOTE_OFF], [param param1] is the [b]original[/b] MIDI key from the file, without transpose applied. The synthesizer uses the transposed key internally.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="MESSAGE_NOTE_OFF" value="128" enum="MIDIMessageType">
+			Note off message. Stops a note on the given channel.
+		</constant>
+		<constant name="MESSAGE_NOTE_ON" value="144" enum="MIDIMessageType">
+			Note on message. Starts a note on the given channel.
+		</constant>
+		<constant name="MESSAGE_KEY_PRESSURE" value="160" enum="MIDIMessageType">
+			Polyphonic key pressure (aftertouch) message.
+		</constant>
+		<constant name="MESSAGE_CONTROL_CHANGE" value="176" enum="MIDIMessageType">
+			Control change message. Sends a MIDI controller value (see [enum MIDIController]).
+		</constant>
+		<constant name="MESSAGE_PROGRAM_CHANGE" value="192" enum="MIDIMessageType">
+			Program change message. Selects an instrument preset on the given channel.
+		</constant>
+		<constant name="MESSAGE_CHANNEL_PRESSURE" value="208" enum="MIDIMessageType">
+			Channel pressure (aftertouch) message.
+		</constant>
+		<constant name="MESSAGE_PITCH_BEND" value="224" enum="MIDIMessageType">
+			Pitch bend message. Value range is 0–16383 with 8192 as center (no bend).
+		</constant>
+		<constant name="MESSAGE_SET_TEMPO" value="81" enum="MIDIMessageType">
+			Set tempo meta message. Emitted by [signal applied_midi_message] only, not sendable via [method push_midi_message]. [code]param1[/code] contains the tempo in beats per minute (BPM).
+		</constant>
+		<constant name="CONTROLLER_BANK_SELECT_MSB" value="0" enum="MIDIController">
+			Bank Select (MSB).
+		</constant>
+		<constant name="CONTROLLER_MODULATION_WHEEL_MSB" value="1" enum="MIDIController">
+			Modulation Wheel (MSB).
+		</constant>
+		<constant name="CONTROLLER_BREATH_MSB" value="2" enum="MIDIController">
+			Breath Controller (MSB).
+		</constant>
+		<constant name="CONTROLLER_FOOT_MSB" value="4" enum="MIDIController">
+			Foot Controller (MSB).
+		</constant>
+		<constant name="CONTROLLER_PORTAMENTO_TIME_MSB" value="5" enum="MIDIController">
+			Portamento Time (MSB).
+		</constant>
+		<constant name="CONTROLLER_DATA_ENTRY_MSB" value="6" enum="MIDIController">
+			Data Entry (MSB).
+		</constant>
+		<constant name="CONTROLLER_VOLUME_MSB" value="7" enum="MIDIController">
+			Channel Volume (MSB).
+		</constant>
+		<constant name="CONTROLLER_BALANCE_MSB" value="8" enum="MIDIController">
+			Balance (MSB).
+		</constant>
+		<constant name="CONTROLLER_PAN_MSB" value="10" enum="MIDIController">
+			Pan (MSB).
+		</constant>
+		<constant name="CONTROLLER_EXPRESSION_MSB" value="11" enum="MIDIController">
+			Expression Controller (MSB).
+		</constant>
+		<constant name="CONTROLLER_EFFECTS1_MSB" value="12" enum="MIDIController">
+			Effect Control 1 (MSB).
+		</constant>
+		<constant name="CONTROLLER_EFFECTS2_MSB" value="13" enum="MIDIController">
+			Effect Control 2 (MSB).
+		</constant>
+		<constant name="CONTROLLER_GPC1_MSB" value="16" enum="MIDIController">
+			General Purpose Controller 1 (MSB).
+		</constant>
+		<constant name="CONTROLLER_GPC2_MSB" value="17" enum="MIDIController">
+			General Purpose Controller 2 (MSB).
+		</constant>
+		<constant name="CONTROLLER_GPC3_MSB" value="18" enum="MIDIController">
+			General Purpose Controller 3 (MSB).
+		</constant>
+		<constant name="CONTROLLER_GPC4_MSB" value="19" enum="MIDIController">
+			General Purpose Controller 4 (MSB).
+		</constant>
+		<constant name="CONTROLLER_BANK_SELECT_LSB" value="32" enum="MIDIController">
+			Bank Select (LSB).
+		</constant>
+		<constant name="CONTROLLER_MODULATION_WHEEL_LSB" value="33" enum="MIDIController">
+			Modulation Wheel (LSB).
+		</constant>
+		<constant name="CONTROLLER_BREATH_LSB" value="34" enum="MIDIController">
+			Breath Controller (LSB).
+		</constant>
+		<constant name="CONTROLLER_FOOT_LSB" value="36" enum="MIDIController">
+			Foot Controller (LSB).
+		</constant>
+		<constant name="CONTROLLER_PORTAMENTO_TIME_LSB" value="37" enum="MIDIController">
+			Portamento Time (LSB).
+		</constant>
+		<constant name="CONTROLLER_DATA_ENTRY_LSB" value="38" enum="MIDIController">
+			Data Entry (LSB).
+		</constant>
+		<constant name="CONTROLLER_VOLUME_LSB" value="39" enum="MIDIController">
+			Channel Volume (LSB).
+		</constant>
+		<constant name="CONTROLLER_BALANCE_LSB" value="40" enum="MIDIController">
+			Balance (LSB).
+		</constant>
+		<constant name="CONTROLLER_PAN_LSB" value="42" enum="MIDIController">
+			Pan (LSB).
+		</constant>
+		<constant name="CONTROLLER_EXPRESSION_LSB" value="43" enum="MIDIController">
+			Expression Controller (LSB).
+		</constant>
+		<constant name="CONTROLLER_EFFECTS1_LSB" value="44" enum="MIDIController">
+			Effect Control 1 (LSB).
+		</constant>
+		<constant name="CONTROLLER_EFFECTS2_LSB" value="45" enum="MIDIController">
+			Effect Control 2 (LSB).
+		</constant>
+		<constant name="CONTROLLER_GPC1_LSB" value="48" enum="MIDIController">
+			General Purpose Controller 1 (LSB).
+		</constant>
+		<constant name="CONTROLLER_GPC2_LSB" value="49" enum="MIDIController">
+			General Purpose Controller 2 (LSB).
+		</constant>
+		<constant name="CONTROLLER_GPC3_LSB" value="50" enum="MIDIController">
+			General Purpose Controller 3 (LSB).
+		</constant>
+		<constant name="CONTROLLER_GPC4_LSB" value="51" enum="MIDIController">
+			General Purpose Controller 4 (LSB).
+		</constant>
+		<constant name="CONTROLLER_SUSTAIN" value="64" enum="MIDIController">
+			Sustain Pedal (Damper) switch.
+		</constant>
+		<constant name="CONTROLLER_PORTAMENTO" value="65" enum="MIDIController">
+			Portamento switch.
+		</constant>
+		<constant name="CONTROLLER_SOSTENUTO" value="66" enum="MIDIController">
+			Sostenuto switch.
+		</constant>
+		<constant name="CONTROLLER_SOFT_PEDAL" value="67" enum="MIDIController">
+			Soft Pedal switch.
+		</constant>
+		<constant name="CONTROLLER_LEGATO" value="68" enum="MIDIController">
+			Legato Footswitch.
+		</constant>
+		<constant name="CONTROLLER_HOLD2" value="69" enum="MIDIController">
+			Hold 2 switch.
+		</constant>
+		<constant name="CONTROLLER_SOUND_CTRL1" value="70" enum="MIDIController">
+			Sound Controller 1 (Sound Variation).
+		</constant>
+		<constant name="CONTROLLER_SOUND_CTRL2" value="71" enum="MIDIController">
+			Sound Controller 2 (Timbre / Harmonic Intensity).
+		</constant>
+		<constant name="CONTROLLER_SOUND_CTRL3" value="72" enum="MIDIController">
+			Sound Controller 3 (Release Time).
+		</constant>
+		<constant name="CONTROLLER_SOUND_CTRL4" value="73" enum="MIDIController">
+			Sound Controller 4 (Attack Time).
+		</constant>
+		<constant name="CONTROLLER_SOUND_CTRL5" value="74" enum="MIDIController">
+			Sound Controller 5 (Brightness).
+		</constant>
+		<constant name="CONTROLLER_SOUND_CTRL6" value="75" enum="MIDIController">
+			Sound Controller 6 (Decay Time).
+		</constant>
+		<constant name="CONTROLLER_SOUND_CTRL7" value="76" enum="MIDIController">
+			Sound Controller 7 (Vibrato Rate).
+		</constant>
+		<constant name="CONTROLLER_SOUND_CTRL8" value="77" enum="MIDIController">
+			Sound Controller 8 (Vibrato Depth).
+		</constant>
+		<constant name="CONTROLLER_SOUND_CTRL9" value="78" enum="MIDIController">
+			Sound Controller 9 (Vibrato Delay).
+		</constant>
+		<constant name="CONTROLLER_SOUND_CTRL10" value="79" enum="MIDIController">
+			Sound Controller 10.
+		</constant>
+		<constant name="CONTROLLER_GPC5" value="80" enum="MIDIController">
+			General Purpose Controller 5.
+		</constant>
+		<constant name="CONTROLLER_GPC6" value="81" enum="MIDIController">
+			General Purpose Controller 6.
+		</constant>
+		<constant name="CONTROLLER_GPC7" value="82" enum="MIDIController">
+			General Purpose Controller 7.
+		</constant>
+		<constant name="CONTROLLER_GPC8" value="83" enum="MIDIController">
+			General Purpose Controller 8.
+		</constant>
+		<constant name="CONTROLLER_PORTAMENTO_CTRL" value="84" enum="MIDIController">
+			Portamento Control.
+		</constant>
+		<constant name="CONTROLLER_FX_REVERB" value="91" enum="MIDIController">
+			Effects 1 Depth (Reverb Send Level).
+		</constant>
+		<constant name="CONTROLLER_FX_TREMOLO" value="92" enum="MIDIController">
+			Effects 2 Depth (Tremolo Depth).
+		</constant>
+		<constant name="CONTROLLER_FX_CHORUS" value="93" enum="MIDIController">
+			Effects 3 Depth (Chorus Send Level).
+		</constant>
+		<constant name="CONTROLLER_FX_CELESTE_DETUNE" value="94" enum="MIDIController">
+			Effects 4 Depth (Celeste / Detune Depth).
+		</constant>
+		<constant name="CONTROLLER_FX_PHASER" value="95" enum="MIDIController">
+			Effects 5 Depth (Phaser Depth).
+		</constant>
+		<constant name="CONTROLLER_DATA_ENTRY_INCR" value="96" enum="MIDIController">
+			Data Entry Increment.
+		</constant>
+		<constant name="CONTROLLER_DATA_ENTRY_DECR" value="97" enum="MIDIController">
+			Data Entry Decrement.
+		</constant>
+		<constant name="CONTROLLER_NRPN_LSB" value="98" enum="MIDIController">
+			Non-Registered Parameter Number (LSB).
+		</constant>
+		<constant name="CONTROLLER_NRPN_MSB" value="99" enum="MIDIController">
+			Non-Registered Parameter Number (MSB).
+		</constant>
+		<constant name="CONTROLLER_RPN_LSB" value="100" enum="MIDIController">
+			Registered Parameter Number (LSB).
+		</constant>
+		<constant name="CONTROLLER_RPN_MSB" value="101" enum="MIDIController">
+			Registered Parameter Number (MSB).
+		</constant>
+		<constant name="CONTROLLER_ALL_SOUND_OFF" value="120" enum="MIDIController">
+			All Sound Off. Immediately silences all sound on the channel.
+		</constant>
+		<constant name="CONTROLLER_ALL_CTRL_OFF" value="121" enum="MIDIController">
+			Reset All Controllers. Resets all controllers to their default values.
+		</constant>
+		<constant name="CONTROLLER_LOCAL_CONTROL" value="122" enum="MIDIController">
+			Local Control On/Off.
+		</constant>
+		<constant name="CONTROLLER_ALL_NOTES_OFF" value="123" enum="MIDIController">
+			All Notes Off. Releases all notes on the channel.
+		</constant>
+		<constant name="CONTROLLER_OMNI_OFF" value="124" enum="MIDIController">
+			Omni Mode Off.
+		</constant>
+		<constant name="CONTROLLER_OMNI_ON" value="125" enum="MIDIController">
+			Omni Mode On.
+		</constant>
+		<constant name="CONTROLLER_POLY_OFF" value="126" enum="MIDIController">
+			Poly Mode Off (Mono Mode On).
+		</constant>
+		<constant name="CONTROLLER_POLY_ON" value="127" enum="MIDIController">
+			Poly Mode On (Mono Mode Off).
+		</constant>
+	</constants>
+</class>

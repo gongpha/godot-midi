@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamMIDI" inherits="AudioStream" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An audio stream that plays MIDI files using a SoundFont2 synthesizer.
+	</brief_description>
+	<description>
+		[AudioStreamMIDI] is an [AudioStream] implementation that plays Standard MIDI Files (.mid, .midi) synthesized through a [SoundFont2] instrument bank. It supports tempo scaling, global transpose, and looping.
+		To use, assign both a [member soundfont] and a [member midi] resource, then play via an [AudioStreamPlayer] or similar node. The playback instance created is [AudioStreamPlaybackMIDISF2], which provides per-channel controls such as mute, solo, transpose, volume, and program override.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="false">
+			If [code]true[/code], the MIDI will restart from [member loop_offset] when playback reaches the end. Useful for background music.
+		</member>
+		<member name="loop_offset" type="float" setter="set_loop_offset" getter="get_loop_offset" default="0.0">
+			Time in seconds at which the stream restarts after looping.
+		</member>
+		<member name="midi" type="MIDI" setter="set_midi" getter="get_midi">
+			The [MIDI] resource containing the Standard MIDI File data to play.
+		</member>
+		<member name="soundfont" type="SoundFont2" setter="set_soundfont" getter="get_soundfont">
+			The [SoundFont2] resource used to synthesize the MIDI data. Must be assigned before playback.
+		</member>
+		<member name="tempo_scale" type="float" setter="set_tempo_scale" getter="get_tempo_scale" default="1.0">
+			Multiplier for the MIDI playback speed. Values greater than [code]1.0[/code] speed up playback, values less than [code]1.0[/code] slow it down. Must be greater than [code]0.0[/code].
+		</member>
+		<member name="transpose" type="int" setter="set_transpose" getter="get_transpose" default="0">
+			Global transpose in octaves applied to all note events during playback. Positive values shift notes up, negative values shift notes down.
+		</member>
+	</members>
+</class>

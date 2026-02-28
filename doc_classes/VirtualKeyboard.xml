@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VirtualKeyboard" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A piano-style virtual keyboard control that emits note events.
+	</brief_description>
+	<description>
+		[VirtualKeyboard] is a [Control] that draws a piano keyboard and emits [signal note_on] / [signal note_off] signals when the user clicks or drags across the keys. It can be connected to an [AudioStreamPlaybackSoundfont] or [AudioStreamPlaybackMIDISF2] to produce sound.
+		The keyboard supports configurable octave range via [member octave_start] and [member octave_count], and its appearance can be fully customized through theme properties.
+		[b]Example usage with AudioStreamSoundfontPlayer:[/b]
+		[codeblock]
+		# In _ready():
+		$AudioStreamPlayer.play()
+		var playback = $AudioStreamPlayer.get_stream_playback()
+
+		$VirtualKeyboard.note_on.connect(func(note):
+		    playback.note_on(note, 0.8)
+		)
+		$VirtualKeyboard.note_off.connect(func(note):
+		    playback.note_off(note)
+		)
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear_key_color_overrides">
+			<return type="void" />
+			<description>
+				Removes all per-key color overrides, restoring every key to its default theme color.
+			</description>
+		</method>
+		<method name="get_key_color_override" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="note" type="int" />
+			<description>
+				Returns the color override for [param note], or [code]Color(0, 0, 0, 0)[/code] if no override is set.
+			</description>
+		</method>
+		<method name="get_pressed_note" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the MIDI note number of the currently pressed key, or [code]-1[/code] if no key is pressed.
+			</description>
+		</method>
+		<method name="has_key_color_override" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="note" type="int" />
+			<description>
+				Returns [code]true[/code] if the key corresponding to [param note] has a color override set via [method set_key_color_override].
+			</description>
+		</method>
+		<method name="remove_key_color_override">
+			<return type="void" />
+			<param index="0" name="note" type="int" />
+			<description>
+				Removes the color override for the key corresponding to [param note], restoring its default theme color.
+			</description>
+		</method>
+		<method name="set_key_color_override">
+			<return type="void" />
+			<param index="0" name="note" type="int" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Overrides the fill color of the key corresponding to [param note] (0–127). The override takes priority over the normal, pressed, and hover theme colors. Useful for highlighting notes, e.g. showing which keys belong to a chord or scale.
+				Call [method remove_key_color_override] or [method clear_key_color_overrides] to restore the default appearance.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="disable_input" type="bool" setter="set_disable_input" getter="get_disable_input" default="false">
+			If [code]true[/code], the keyboard ignores all mouse input. Any currently pressed note is released and hover state is cleared when this is enabled. Useful when using the keyboard purely for display (e.g. highlighting notes) without allowing user interaction.
+		</member>
+		<member name="octave_count" type="int" setter="set_octave_count" getter="get_octave_count" default="2">
+			The number of octaves displayed on the keyboard. Valid range is [code]1[/code] to [code]10[/code].
+		</member>
+		<member name="octave_start" type="int" setter="set_octave_start" getter="get_octave_start" default="3">
+			The starting octave of the keyboard. Octave 4 contains Middle C (MIDI note 60). Valid range is [code]0[/code] to [code]9[/code].
+		</member>
+	</members>
+	<signals>
+		<signal name="note_off">
+			<param index="0" name="note" type="int" />
+			<description>
+				Emitted when a key is released. [param note] is the MIDI note number that was previously pressed. Also emitted when dragging from one key to another (the old key emits [signal note_off] before the new key emits [signal note_on]).
+			</description>
+		</signal>
+		<signal name="note_on">
+			<param index="0" name="note" type="int" />
+			<description>
+				Emitted when a key is pressed. [param note] is the MIDI note number (0–127).
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="KEY_STATE_NORMAL" value="0" enum="KeyState">
+			The key is in its default state.
+		</constant>
+		<constant name="KEY_STATE_PRESSED" value="1" enum="KeyState">
+			The key is currently pressed.
+		</constant>
+		<constant name="KEY_STATE_HOVER" value="2" enum="KeyState">
+			The key is being hovered by the mouse cursor.
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="black_key_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			The fill color of black keys in their normal state.
+		</theme_item>
+		<theme_item name="black_key_hover_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			The fill color of black keys when hovered by the mouse.
+		</theme_item>
+		<theme_item name="black_key_pressed_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			The fill color of black keys when pressed.
+		</theme_item>
+		<theme_item name="separator_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			The color of separator lines drawn between white keys and around the keyboard border.
+		</theme_item>
+		<theme_item name="white_key_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			The fill color of white keys in their normal state.
+		</theme_item>
+		<theme_item name="white_key_hover_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			The fill color of white keys when hovered by the mouse.
+		</theme_item>
+		<theme_item name="white_key_pressed_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			The fill color of white keys when pressed.
+		</theme_item>
+		<theme_item name="black_key_height_ratio" data_type="constant" type="int" default="0">
+			The height of black keys as a percentage of the keyboard's total height. A value of [code]60[/code] means black keys are 60% as tall as the control.
+		</theme_item>
+		<theme_item name="black_key_width_ratio" data_type="constant" type="int" default="0">
+			The width of black keys as a percentage of [theme_item white_key_width]. A value of [code]60[/code] means black keys are 60% the width of white keys.
+		</theme_item>
+		<theme_item name="separator_width" data_type="constant" type="int" default="0">
+			The width in pixels of separator lines between white keys and the outer border. Set to [code]0[/code] to disable separators.
+		</theme_item>
+		<theme_item name="white_key_width" data_type="constant" type="int" default="0">
+			The width in pixels of each white key.
+		</theme_item>
+	</theme_items>
+</class>

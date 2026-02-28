@@ -1,0 +1,132 @@
+[gd_scene format=3 uid="uid://clsmh8akxi131"]
+
+[ext_resource type="Script" uid="uid://078yo17fp7rb" path="res://track.gd" id="1_mll3j"]
+
+[node name="track" type="VBoxContainer" unique_id=1117948410]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 68.0
+grow_horizontal = 2
+script = ExtResource("1_mll3j")
+
+[node name="p" type="Panel" parent="." unique_id=1778529712]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="h" type="HBoxContainer" parent="p" unique_id=364011969]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="v" type="HBoxContainer" parent="p/h" unique_id=1908940777]
+custom_minimum_size = Vector2(800, 0)
+layout_mode = 2
+
+[node name="track_name" type="Label" parent="p/h/v" unique_id=1650229835]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="bank" type="OptionButton" parent="p/h/v" unique_id=297459368]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="vs" type="VSeparator" parent="p/h" unique_id=1080077035]
+layout_mode = 2
+
+[node name="mute" type="CheckButton" parent="p/h" unique_id=1626038068]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Mute"
+
+[node name="solo" type="CheckButton" parent="p/h" unique_id=622332234]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Solo"
+
+[node name="transpose" type="SpinBox" parent="p/h" unique_id=105770328]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = -23.99999999999993
+max_value = 23.99999999999993
+prefix = "+"
+
+[node name="h" type="HBoxContainer" parent="p/h" unique_id=391151100]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="vol" type="HBoxContainer" parent="p/h/h" unique_id=1497654534]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="n" type="Label" parent="p/h/h/vol" unique_id=55223861]
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+text = "VOL"
+
+[node name="vol_slider" type="HSlider" parent="p/h/h/vol" unique_id=255423780]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 0.999999999999997
+step = 0.0999999999999997
+value = 0.999999999999997
+
+[node name="vs" type="VSeparator" parent="p/h/h" unique_id=1566565497]
+layout_mode = 2
+
+[node name="pan" type="HBoxContainer" parent="p/h/h" unique_id=852582771]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="n" type="Label" parent="p/h/h/pan" unique_id=1996632507]
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+text = "PAN"
+
+[node name="pan_slider" type="HSlider" parent="p/h/h/pan" unique_id=1980412659]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = -0.999999999999997
+max_value = 0.999999999999997
+step = 0.0999999999999997
+
+[node name="pitch" type="HBoxContainer" parent="p/h/h" unique_id=1616852365]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="n" type="Label" parent="p/h/h/pitch" unique_id=5731005]
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+text = "PITCH"
+
+[node name="pitch_slider" type="HSlider" parent="p/h/h/pitch" unique_id=861968669]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = -0.999999999999997
+max_value = 0.999999999999997
+step = 0.0999999999999997
+
+[node name="s" type="ScrollContainer" parent="." unique_id=1587840152]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+
+[node name="vk" type="VirtualKeyboard" parent="s" unique_id=821103443]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/white_key_width = 16
+octave_start = 0
+octave_count = 10
+disable_input = true

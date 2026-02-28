@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+
+import build
+
+Import('env')
+
+module_obj = []
+
+sources = Glob('*.cpp')
+sources.extend(Glob('src/*.cpp'))
+sources.extend(Glob('src/ui/*.cpp'))
+
+module_env = env.Clone()
+
+###
+module_env.Append(CPPDEFINES=[
+])
+
+module_env.__class__._process_env = build._process_env
+module_env._process_env(module_env, sources, True)
+###
+
+module_env.add_source_files(env.modules_sources, sources)
+env.modules_sources += module_obj
+env.Depends(module_obj, [])

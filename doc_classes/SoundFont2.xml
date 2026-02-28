@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SoundFont2" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A resource that holds a SoundFont 2 (.sf2) instrument bank.
+	</brief_description>
+	<description>
+		[SoundFont2] wraps a SoundFont 2 file, which contains sampled instrument data used to synthesize MIDI audio. It is used by [AudioStreamMIDI] to provide the instrument sounds for MIDI playback.
+		SoundFont files ([code].sf2[/code]) are automatically loaded by the engine's resource loader when placed in the project. They can also be loaded from raw byte data at runtime using [method load_from_buffer].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_preset_list" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="bank" type="int" />
+			<description>
+				Returns a [Dictionary] mapping preset (patch) numbers ([int]) to instrument names ([String]) for the given bank number. Use bank [code]0[/code] for General MIDI melodic instruments, or bank [code]128[/code] for General MIDI percussion.
+				Only presets that exist in the loaded SoundFont are included. Preset numbers range from 0 to 127.
+				[codeblock]
+				var sf2 : SoundFont2 = load("res://gm.sf2")
+				var instruments = sf2.get_preset_list(0)
+				for patch in instruments:
+				    print("Patch %d: %s" % [patch, instruments[patch]])
+				[/codeblock]
+			</description>
+		</method>
+		<method name="load_from_buffer" qualifiers="static">
+			<return type="SoundFont2" />
+			<param index="0" name="data" type="PackedByteArray" />
+			<description>
+				Creates a new [SoundFont2] resource from a [PackedByteArray] containing raw SF2 file data. Returns [code]null[/code] on failure.
+			</description>
+		</method>
+	</methods>
+</class>

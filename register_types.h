@@ -1,0 +1,18 @@
+#pragma once
+
+#ifdef _GDEXTENSION
+#include <godot_cpp/godot.hpp>
+#define GDXMOD_LIBRARY_INITIALIZE_FUNC initialize_midi_types
+#define GDXMOD_LIBRARY_UNINITIALIZE_FUNC uninitialize_midi_types
+#define GDXMOD_LIBRARY_INITIALIZE_NAME GDXMOD_LIBRARY_INITIALIZE_FUNC(godot::ModuleInitializationLevel p_level)
+#define GDXMOD_LIBRARY_UNINITIALIZE_NAME GDXMOD_LIBRARY_UNINITIALIZE_FUNC(godot::ModuleInitializationLevel p_level)
+#else
+#include "modules/register_module_types.h"
+#define GDXMOD_LIBRARY_INITIALIZE_FUNC initialize_midi_module
+#define GDXMOD_LIBRARY_UNINITIALIZE_FUNC uninitialize_midi_module
+#define GDXMOD_LIBRARY_INITIALIZE_NAME GDXMOD_LIBRARY_INITIALIZE_FUNC(ModuleInitializationLevel p_level)
+#define GDXMOD_LIBRARY_UNINITIALIZE_NAME GDXMOD_LIBRARY_UNINITIALIZE_FUNC(ModuleInitializationLevel p_level)
+#endif
+
+void GDXMOD_LIBRARY_INITIALIZE_NAME;
+void GDXMOD_LIBRARY_UNINITIALIZE_NAME;

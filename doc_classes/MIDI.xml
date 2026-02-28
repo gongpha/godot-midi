@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MIDI" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A resource that holds Standard MIDI File data.
+	</brief_description>
+	<description>
+		[MIDI] wraps a Standard MIDI File (.mid, .midi), storing the parsed sequence of MIDI messages. It is used by [AudioStreamMIDI] as the source of musical events for playback.
+		MIDI files are automatically loaded by the engine's resource loader when placed in the project. They can also be loaded from raw byte data at runtime using [method load_from_buffer].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="load_from_buffer" qualifiers="static">
+			<return type="MIDI" />
+			<param index="0" name="data" type="PackedByteArray" />
+			<description>
+				Creates a new [MIDI] resource from a [PackedByteArray] containing raw MIDI file data. Returns [code]null[/code] on failure.
+			</description>
+		</method>
+	</methods>
+</class>

@@ -1,0 +1,161 @@
+[gd_scene format=3 uid="uid://gt5hi4vvi5mn"]
+
+[ext_resource type="Script" uid="uid://dx4qg7ek64c8o" path="res://midi_player.gd" id="1_xdiku"]
+
+[sub_resource type="AudioStreamSoundfontPlayer" id="AudioStreamSoundfontPlayer_td4n3"]
+
+[node name="midi_player" type="Control" unique_id=1780132761]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_xdiku")
+
+[node name="player" type="AudioStreamPlayer" parent="." unique_id=453596547]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamSoundfontPlayer_td4n3")
+
+[node name="v" type="VBoxContainer" parent="." unique_id=461218645]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="s" type="ScrollContainer" parent="v" unique_id=2083432815]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="tracks_box" type="VBoxContainer" parent="v/s" unique_id=308556131]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="f" type="PanelContainer" parent="v" unique_id=1576042071]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+
+[node name="v" type="VBoxContainer" parent="v/f" unique_id=643258408]
+layout_mode = 2
+
+[node name="h" type="HBoxContainer" parent="v/f/v" unique_id=758641268]
+layout_mode = 2
+
+[node name="seek_bar" type="HSlider" parent="v/f/v/h" unique_id=805375501]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+
+[node name="play_pause_button" type="Button" parent="v/f/v/h" unique_id=1358918727]
+unique_name_in_owner = true
+layout_mode = 2
+text = "PLAY"
+
+[node name="stop_button" type="Button" parent="v/f/v/h" unique_id=1506442541]
+unique_name_in_owner = true
+layout_mode = 2
+text = "STOP"
+
+[node name="vs" type="VSeparator" parent="v/f/v/h" unique_id=1266505668]
+layout_mode = 2
+
+[node name="tempo_scale" type="HSlider" parent="v/f/v/h" unique_id=1667281749]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(256, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+max_value = 7.999999999999976
+step = 0.4999999999999985
+value = 0.999999999999996
+tick_count = 10
+ticks_on_borders = true
+ticks_position = 2
+
+[node name="tempo_scale_spinbox" type="SpinBox" parent="v/f/v/h" unique_id=1035410984]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 0.0999999999999997
+max_value = 7.999999999999976
+step = 0.0999999999999997
+value = 0.9999999999999969
+
+[node name="vs2" type="VSeparator" parent="v/f/v/h" unique_id=391496132]
+layout_mode = 2
+
+[node name="bpm" type="SpinBox" parent="v/f/v/h" unique_id=65766342]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
+min_value = 0.999999999999997
+max_value = 799.9999999999976
+value = 120.0
+rounded = true
+alignment = 2
+editable = false
+suffix = "BPM"
+
+[node name="midi" type="HBoxContainer" parent="v/f/v" unique_id=331467039]
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="l" type="Label" parent="v/f/v/midi" unique_id=1647867828]
+custom_minimum_size = Vector2(256, 0)
+layout_mode = 2
+text = "MIDI File : "
+
+[node name="edit_mid" type="LineEdit" parent="v/f/v/midi" unique_id=459028738]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="browse_mid" type="Button" parent="v/f/v/midi" unique_id=1936614690]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+text = ". . ."
+
+[node name="midi_chooser" type="FileDialog" parent="v/f/v/midi" unique_id=421257397]
+unique_name_in_owner = true
+oversampling_override = 1.0
+title = "Open a File"
+position = Vector2i(0, 36)
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.mid", "*.midi")
+use_native_dialog = true
+
+[node name="sf2" type="HBoxContainer" parent="v/f/v" unique_id=1296039382]
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="l" type="Label" parent="v/f/v/sf2" unique_id=72189105]
+custom_minimum_size = Vector2(256, 0)
+layout_mode = 2
+text = "Soundfont File : "
+
+[node name="edit_sf2" type="LineEdit" parent="v/f/v/sf2" unique_id=2125198839]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="browse_sf2" type="Button" parent="v/f/v/sf2" unique_id=906712358]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+text = ". . ."
+
+[node name="sf2_chooser" type="FileDialog" parent="v/f/v/sf2" unique_id=1843417452]
+unique_name_in_owner = true
+oversampling_override = 1.0
+title = "Open a File"
+position = Vector2i(0, 36)
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.sf2")
+use_native_dialog = true

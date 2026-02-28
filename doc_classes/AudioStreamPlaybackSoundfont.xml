@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamPlaybackSoundfont" inherits="AudioStreamPlayback" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Playback instance for [AudioStreamSoundfontPlayer] with direct note and channel control.
+	</brief_description>
+	<description>
+		[AudioStreamPlaybackSoundfont] is the playback class instantiated by [AudioStreamSoundfontPlayer]. It renders audio from a SoundFont2 synthesizer and accepts live note-on / note-off commands. All control methods are thread-safe - commands are queued and processed on the audio thread.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="channel_pressure">
+			<return type="void" />
+			<param index="0" name="channel" type="int" />
+			<param index="1" name="pressure" type="int" />
+			<description>
+				Sends a channel pressure (aftertouch) message.
+			</description>
+		</method>
+		<method name="control_change">
+			<return type="void" />
+			<param index="0" name="channel" type="int" />
+			<param index="1" name="controller" type="int" />
+			<param index="2" name="value" type="int" />
+			<description>
+				Sends a MIDI Control Change message on [param channel].
+			</description>
+		</method>
+		<method name="note_off">
+			<return type="void" />
+			<param index="0" name="key" type="int" />
+			<param index="1" name="channel" type="int" default="0" />
+			<description>
+				Stops a playing note. [param key] and [param channel] must match a previous [method note_on] call.
+			</description>
+		</method>
+		<method name="note_off_all">
+			<return type="void" />
+			<description>
+				Immediately stops all playing notes on all channels.
+			</description>
+		</method>
+		<method name="note_on">
+			<return type="void" />
+			<param index="0" name="key" type="int" />
+			<param index="1" name="velocity" type="float" default="1.0" />
+			<param index="2" name="channel" type="int" default="0" />
+			<description>
+				Starts playing a note. [param key] is a MIDI note number (0–127, where 60 = Middle C). [param velocity] is the volume (0.0–1.0). [param channel] selects the MIDI channel (0–15).
+			</description>
+		</method>
+		<method name="pitch_bend">
+			<return type="void" />
+			<param index="0" name="channel" type="int" />
+			<param index="1" name="pitch_wheel" type="int" />
+			<description>
+				Sends a pitch bend. [param pitch_wheel] ranges from 0 to 16383 (center = 8192).
+			</description>
+		</method>
+		<method name="set_preset">
+			<return type="void" />
+			<param index="0" name="channel" type="int" />
+			<param index="1" name="preset_number" type="int" />
+			<param index="2" name="drums" type="bool" default="false" />
+			<description>
+				Changes the instrument (preset) on [param channel]. Set [param drums] to [code]true[/code] for percussion (bank 128).
+			</description>
+		</method>
+	</methods>
+</class>
