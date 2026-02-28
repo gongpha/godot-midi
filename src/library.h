@@ -14,7 +14,7 @@ using namespace godot;
 static Ref<ResourceFormatLoaderMIDI> resource_loader_midi;
 static Ref<ResourceFormatLoaderSoundFont> resource_loader_soundfont;
 
-void initialize_library(ModuleInitializationLevel p_level) {
+void initialize_library_midi(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
@@ -41,7 +41,7 @@ void initialize_library(ModuleInitializationLevel p_level) {
 #endif
 }
 
-void uninitialize_library(ModuleInitializationLevel p_level) {
+void uninitialize_library_midi(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}

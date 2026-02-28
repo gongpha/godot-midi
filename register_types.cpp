@@ -11,11 +11,11 @@ using namespace godot;
 #include "src/library.h"
 
 void GDXMOD_LIBRARY_INITIALIZE_NAME {
-	initialize_library(p_level);
+	initialize_library_midi(p_level);
 }
 
 void GDXMOD_LIBRARY_UNINITIALIZE_NAME {
-	uninitialize_library(p_level);
+	uninitialize_library_midi(p_level);
 }
 
 #ifdef _GDEXTENSION
