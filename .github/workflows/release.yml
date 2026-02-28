@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: godot-midi-linux-*
+          path: project/addons/godot-midi/bin/linux/
+          merge-multiple: true
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: godot-midi-windows-*
+          path: project/addons/godot-midi/bin/windows/
+          merge-multiple: true
+
+      - name: Upload universal release zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-midi-universal
+          path: project/
+          retention-days: 1
