@@ -1,0 +1,140 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [master, main]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+
+jobs:
+  build_linux:
+    name: Build Linux
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: template_debug
+            arch: x86_64
+          - target: template_release
+            arch: x86_64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Clone godot-cpp
+        run: |
+          git clone --depth 1 --branch 4.4 https://github.com/godotengine/godot-cpp.git godot-cpp
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            scons \
+            pkg-config \
+            libx11-dev \
+            libxcursor-dev \
+            libxinerama-dev \
+            libxrandr-dev \
+            libxi-dev \
+            libgl1-mesa-dev \
+            libasound2-dev \
+            libpulse-dev \
+            libvulkan-dev \
+            glslc
+
+      - name: Build GDExtension
+        run: |
+          scons target=${{ matrix.target }} arch=${{ matrix.arch }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-midi-linux-${{ matrix.target }}-${{ matrix.arch }}
+          path: project/addons/godot-midi/bin/linux/
+          if-no-files-found: error
+
+  build_windows:
+    name: Build Windows
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: template_debug
+            arch: x86_64
+          - target: template_release
+            arch: x86_64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Clone godot-cpp
+        run: |
+          git clone --depth 1 --branch 4.4 https://github.com/godotengine/godot-cpp.git godot-cpp
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install SCons
+        run: |
+          pip install scons
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1.13.0
+        with:
+          arch: x64
+
+      - name: Build GDExtension
+        shell: pwsh
+        run: |
+          scons target=${{ matrix.target }} arch=${{ matrix.arch }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-midi-windows-${{ matrix.target }}-${{ matrix.arch }}
+          path: project/addons/godot-midi/bin/windows/
+          if-no-files-found: error
+
+  release:
+    name: Create Release
+    needs: [build_linux, build_windows]
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: godot-midi-linux-*
+          path: project/addons/godot-midi/bin/linux/
+          merge-multiple: true
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: godot-midi-windows-*
+          path: project/addons/godot-midi/bin/windows/
+          merge-multiple: true
+
+      - name: Upload universal release zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-midi-universal
+          path: project/
+          retention-days: 1
