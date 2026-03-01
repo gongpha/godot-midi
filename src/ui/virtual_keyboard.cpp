@@ -5,6 +5,7 @@
 #include <godot_cpp/classes/input_event_mouse_motion.hpp>
 #define SNAME(x) x
 #else
+#include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
 #endif
 
