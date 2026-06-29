@@ -736,14 +736,6 @@ Ref<AudioStreamPlayback> AudioStreamMIDI::instantiate_playback() {
 #endif
 
 #ifdef _GDEXTENSION
-String AudioStreamMIDI::_get_stream_name() const {
-#else
-String AudioStreamMIDI::get_stream_name() const {
-#endif
-	return "";
-}
-
-#ifdef _GDEXTENSION
 double AudioStreamMIDI::_get_length() const {
 #else
 double AudioStreamMIDI::get_length() const {

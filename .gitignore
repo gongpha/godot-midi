@@ -9,3 +9,4 @@ godot-cpp
 godot-cpp/
 
 *.os
+bin/

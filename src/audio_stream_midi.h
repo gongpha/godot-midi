@@ -261,12 +261,10 @@ public:
 
 #ifdef _GDEXTENSION
 	virtual Ref<AudioStreamPlayback> _instantiate_playback() const override;
-	virtual String _get_stream_name() const override;
 	virtual double _get_length() const override;
 	virtual bool _is_monophonic() const override;
 #else
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
-	virtual String get_stream_name() const override;
 	virtual double get_length() const override;
 	virtual bool is_monophonic() const override;
 #endif
