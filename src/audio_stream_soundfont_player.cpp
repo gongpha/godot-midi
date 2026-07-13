@@ -7,7 +7,24 @@ using namespace godot;
 #include "core/object/class_db.h"
 #endif
 
+// suppress warnings in third-party headers to avoid failing dev_build (llvm & gcc guys)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wnull-pointer-subtraction"
+#pragma clang diagnostic ignored "-Wimplicit-fallthrough"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wnull-pointer-subtraction"
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#endif
 #include "../thirdparty/tinysoundfont/tsf.h"
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
 #ifdef _GDEXTENSION
 #define PENDING_MUTEX_LOCK pending_mutex->lock();
@@ -261,14 +278,6 @@ Ref<AudioStreamPlayback> AudioStreamSoundfontPlayer::instantiate_playback() {
 	return playback;
 }
 #endif
-
-#ifdef _GDEXTENSION
-String AudioStreamSoundfontPlayer::_get_stream_name() const {
-#else
-String AudioStreamSoundfontPlayer::get_stream_name() const {
-#endif
-	return "";
-}
 
 #ifdef _GDEXTENSION
 double AudioStreamSoundfontPlayer::_get_length() const {

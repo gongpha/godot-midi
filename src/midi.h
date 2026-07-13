@@ -10,7 +10,9 @@ using namespace godot;
 #include "core/io/resource_loader.h"
 #endif
 
-class tml_message;
+// forward declare as struct instead of class to match thirdparty/tinysoundfont/tml.h
+// and prevent -Wmismatched-tags compilation errors
+struct tml_message;
 
 class AudioStreamPlaybackMIDISF2;
 

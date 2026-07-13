@@ -37,5 +37,22 @@ inline float tsf_math_log10(float p_x) {
 #define TSF_SQRT
 #define TSF_SQRTF Math::sqrt
 
+// suppress warnings in third-party headers to avoid failing dev_build (llvm & gcc guys)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wnull-pointer-subtraction"
+#pragma clang diagnostic ignored "-Wimplicit-fallthrough"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wnull-pointer-subtraction"
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#endif
 #define TSF_IMPLEMENTATION
 #include "../thirdparty/tinysoundfont/tsf.h"
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
