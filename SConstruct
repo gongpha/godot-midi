@@ -11,7 +11,7 @@ from methods import print_error
 from lib import lib_name as libname
 from lib import project_dir as projectdir
 
-import build
+import midi_build
 
 localEnv = Environment(tools=["default"], PLATFORM="")
 
@@ -28,7 +28,7 @@ customs = [os.path.abspath(path) for path in customs]
 
 opts = Variables(customs, ARGUMENTS)
 
-build._setup_options(opts)
+midi_build._setup_options(opts)
 
 opts.Update(localEnv)
 
@@ -57,7 +57,7 @@ env.Append(CPPDEFINES=[
     "_GDEXTENSION"
 ])
 
-env.__class__._process_env = build._process_env
+env.__class__._process_env = midi_build._process_env
 env._process_env(env, sources, True)
 ###
 

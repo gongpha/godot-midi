@@ -10,7 +10,7 @@
 using namespace godot;
 #else
 #include "servers/audio/audio_server.h"
-#include "servers/audio/audio_stream.h"
+#include "scene/resources/audio/audio_stream.h"
 #include "core/os/mutex.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/safe_refcount.h"
